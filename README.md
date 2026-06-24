@@ -277,17 +277,6 @@ uvicorn main:app --reload
 
 ---
 
-# Screenshots
-
-Add screenshots of your dashboard here.
-
-Example:
-
-```markdown
-![Dashboard](screenshots/dashboard.png)
-```
-
----
 
 # Author
 
