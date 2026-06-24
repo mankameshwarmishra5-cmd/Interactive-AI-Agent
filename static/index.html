@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive AI Agent powered by Gemini 2.5 Flash — a FastAPI chatbot with tools, streaming, and real-time status.">
+    <title>Interactive AI Agent — Console</title>
+
+    <!-- Google Fonts: Outfit & Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Background glowing shapes -->
+    <div class="glow-bg">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+
+    <!-- Toast notification container -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <div class="app-container">
+        <!-- ── Sidebar ───────────────────────────────────── -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-brain-circuit"></i>
+                </div>
+                <h2>Antigravity Agent</h2>
+            </div>
+
+            <!-- System Integration -->
+            <div class="sidebar-section">
+                <h3>System Integration</h3>
+                <div class="status-card" id="status-card">
+                    <div class="status-item">
+                        <span class="label">API SDK Status</span>
+                        <span class="value" id="sdk-status">
+                            <span class="pulse-indicator pulse-gray"></span> Checking...
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Gemini Key</span>
+                        <span class="value" id="key-status">
+                            <span class="pulse-indicator pulse-gray"></span> Checking...
+                        </span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Active Engine</span>
+                        <span class="value highlight" id="engine-status">Checking...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Stats -->
+            <div class="sidebar-section">
+                <h3>Session Stats</h3>
+                <div class="status-card">
+                    <div class="status-item">
+                        <span class="label">Messages Sent</span>
+                        <span class="value" id="stat-messages">0</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Active Sessions</span>
+                        <span class="value" id="stat-sessions">—</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Server Uptime</span>
+                        <span class="value" id="stat-uptime">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools Available -->
+            <div class="sidebar-section">
+                <h3>Available Tools</h3>
+                <div class="tools-list">
+                    <div class="tool-chip"><i class="fa-solid fa-calculator"></i> Calculator</div>
+                    <div class="tool-chip"><i class="fa-solid fa-clock"></i> Current Time</div>
+                    <div class="tool-chip"><i class="fa-solid fa-magnifying-glass"></i> Web Search</div>
+                    <div class="tool-chip"><i class="fa-solid fa-chart-line"></i> System Status</div>
+                </div>
+            </div>
+
+            <!-- Developer note -->
+            <div class="sidebar-section">
+                <h3>Developer Console</h3>
+                <div class="info-box">
+                    <p><i class="fa-solid fa-circle-info"></i> Running in a sandboxed FastAPI container.</p>
+                    <p class="small">Add your API key in <code>.env</code>, then restart the server to go live.</p>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-secondary" id="clear-chat-btn">
+                    <i class="fa-solid fa-trash-can"></i> Clear History
+                </button>
+            </div>
+        </aside>
+
+        <!-- ── Main Chat Area ────────────────────────────── -->
+        <main class="chat-area">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <div class="agent-profile">
+                    <div class="avatar">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="agent-info">
+                        <h1>Interactive Agent</h1>
+                        <p id="agent-subtitle">Initializing connection...</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="engine-badge" id="engine-badge">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span id="badge-text">STANDBY</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Messages Container -->
+            <div class="messages-container" id="messages-container">
+                <div class="welcome-message-wrapper" id="welcome-message">
+                    <div class="welcome-card">
+                        <i class="fa-solid fa-bolt-lightning welcome-icon"></i>
+                        <h2>Ready for Interaction</h2>
+                        <p>I am a Python-based interactive agent powered by Gemini 2.5 Flash. Ask me anything, request code, use tools, or just chat!</p>
+                        <div class="suggestions">
+                            <button class="suggest-btn" id="sug-status" data-text="What is your current configuration status?">
+                                <i class="fa-solid fa-circle-nodes"></i> Check System Status
+                            </button>
+                            <button class="suggest-btn" id="sug-code" data-text="Give me a Python code template showing how to write a function">
+                                <i class="fa-brands fa-python"></i> Python Template
+                            </button>
+                            <button class="suggest-btn" id="sug-time" data-text="What is the current time and date?">
+                                <i class="fa-solid fa-clock"></i> Current Time
+                            </button>
+                            <button class="suggest-btn" id="sug-joke" data-text="Tell me a developer joke">
+                                <i class="fa-solid fa-face-laugh-beam"></i> Tell a Joke
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator-container" id="typing-indicator" style="display: none;">
+                <div class="typing-bubble">
+                    <div class="dot dot1"></div>
+                    <div class="dot dot2"></div>
+                    <div class="dot dot3"></div>
+                </div>
+                <span class="typing-label">Agent is thinking...</span>
+            </div>
+
+            <!-- Chat Input -->
+            <footer class="chat-input-area">
+                <form id="chat-form" class="chat-form">
+                    <input
+                        type="text"
+                        id="user-message-input"
+                        placeholder="Type a message or ask the agent anything..."
+                        autocomplete="off"
+                        maxlength="4000"
+                        required
+                    />
+                    <button type="submit" class="send-btn" id="send-button" title="Send message">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+                <div class="input-meta">
+                    <span id="char-counter" class="char-counter">0 / 4000</span>
+                    <span id="stream-toggle-wrap">
+                        <label class="stream-toggle-label" for="stream-toggle">
+                            <input type="checkbox" id="stream-toggle" checked>
+                            <span>Stream responses</span>
+                        </label>
+                    </span>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

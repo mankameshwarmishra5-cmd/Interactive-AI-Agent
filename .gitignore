@@ -1,0 +1,10 @@
+venv/
+.env
+.env.example
+Sensitive Data/
+__pycache__/
+*.pyc
+*.db
+*.log
+logs/
+.vscode/
